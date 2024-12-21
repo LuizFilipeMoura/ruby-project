@@ -2,6 +2,10 @@ import type { Cell } from "./cell.ts";
 import { WithId } from "./withId.ts";
 
 export class Unit extends WithId {
+    constructor(props: Partial<Unit> = {}) {
+        super();
+        Object.assign(this, props);
+    }
     name: string = "";
     health: number = 100;
 

@@ -22,6 +22,7 @@ export const spawnUnit = ({unit, gameState, player, cell}: SpawnUnitProps) => {
     if(!cell) {
         throw new Error("Cell must be provided");
     }
+    console.log("cell", cell);
     if(!cell.isSpawnableBy(player)) {
         throw new Error("Cell is not spawnable by player");
     }
@@ -42,7 +43,6 @@ export const spawnUnit = ({unit, gameState, player, cell}: SpawnUnitProps) => {
         throw new Error("Player does not have enough gold to spawn unit");
     }
     player.gold -= unit.spawnCost;
-    cell.hasUnit = true;
     cell.unitId = unit.id;
     unit.positionCell = cell;
     gameState.units.push(unit);

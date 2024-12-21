@@ -1,5 +1,6 @@
 import type { Grid } from "./grid.ts";
 import {Player} from "./player.ts";
+import type { Unit } from "./unit.ts";
 
 export class Cell {
     constructor({ x, y, ownerPlayerId }: {
@@ -14,7 +15,7 @@ export class Cell {
     x: number = 0;
     y: number = 0;
     ownerPlayerId: string | null = null;
-    private unitId: string | null = null;
+    unitId: string | null = null;
     terrain: string = "grass";
     createdAt: number = Date.now();
     updatedAt: number = Date.now();
@@ -27,10 +28,27 @@ export class Cell {
         }
         return false
     }; 
+    
     isMovableTo: () => boolean = () => {
         if(this.unitId) {
             return false;
         }
+        return true;
+    }
+    setUnit: (unit: Unit) => string = (unit: Unit) => {
+        if(this.unitId) {
+            throw new Error("Cell already has a unit");
+        }
+        unit.positionCell?.removeUnit();
+        unit.positionCell = this;
+        this.unitId = unit.id;
+        return unit.id;
+    }
+    removeUnit: () => boolean = () => {
+        if(!this.unitId) {
+            throw new Error("Does not have a unit");
+        }
+        this.unitId = null;
         return true;
     }
     getCellsInRange: (range: number, grid: Grid) => Cell[] = (range: number, grid: Grid) => {

@@ -38,13 +38,21 @@ export const moveUnit = ({ unit, targetCell, grid }: MoveUnitParams): MoveUnitRe
 
 //during the movement, the cells are been updated?
 
+    const nextCandidate = path[1];
+
+    const nextCell = grid.cellAt({ x: nextCandidate[0], y: nextCandidate[1] });
+    // const {x: formerX, y: formerY} = unit.positionCell;
+    // console.log("unit position before", unit.positionCell);
+    // console.log("cell candidate before", nextCell);
+
+    nextCell?.setUnit(unit);
+    // console.log("unit position after", unit.positionCell);
+    // console.log("former unit position", grid.cellAt({ x: formerX, y: formerY }));  
+
     return {
         nextCandidate: path[1],
         fullPath: path
     }
 
-    
-
-    
 
 }
