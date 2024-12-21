@@ -23,7 +23,7 @@ function setup() {
     grid = new Grid(6, 4);
     cell = grid.cellAt({ x: 0, y: 0 }) || new Cell();
     unit = new Unit({
-        name: "Test Unit",
+        name: "friendly unit",
         spawnCost: 10,
         positionCell: cell,
         ticksNeededToMoveOneCell: 20,
@@ -189,25 +189,29 @@ Deno.test("assess if the matrix is updated after the unit leaves the cell", () =
     expect(matrix[0][1]).toBe(1); // The cell at (1, 0) should have the unit
 });
 
-Deno.test("create two units moving against each other", () => {
+Deno.test("create two units moving against each other, they avoid each other", () => {
     setup();
     const enemyCell = grid.cellAt({ x: 5, y: 0 }) || new Cell();
     const player2 = new Player();
+    player2.gold = 1000;
     enemyCell.ownerPlayerId = player2.id;
 
     const unit2 = new Unit({
-        name: "Test Unit 2",
+        name: "enemy unit",
         spawnCost: 10,
         positionCell: enemyCell,
         ticksNeededToMoveOneCell: 20,
         ticksUntilMove: 20,
     });
-    spawnUnit({ unit: unit2, gameState, player: player1, cell: enemyCell });
+    spawnUnit({ unit: unit2, gameState, player: player2, cell: enemyCell });
 
     unit.targetCell = grid.cellAt({ x: 5, y: 0 }) || new Cell();
     unit2.targetCell = grid.cellAt({ x: 0, y: 0 }) || new Cell();
 
     if (unit.positionCell === null) {
+        throw new Error("Unit must have a position cell");
+    }
+    if (unit2.positionCell === null) {
         throw new Error("Unit must have a position cell");
     }
     gameState.advanceTicks(21);
@@ -224,13 +228,13 @@ Deno.test("create two units moving against each other", () => {
 
     gameState.advanceTicks(20);
     expect(unit.positionCell.x).toBe(3);
-    expect(unit.positionCell.y).toBe(0);
+    expect(unit.positionCell.y).toBe(1);
     expect(unit2.positionCell.x).toBe(2);
     expect(unit2.positionCell.y).toBe(0);
 
     gameState.advanceTicks(20);
     expect(unit.positionCell.x).toBe(4);
-    expect(unit.positionCell.y).toBe(0);
+    expect(unit.positionCell.y).toBe(1);
     expect(unit2.positionCell.x).toBe(1);
     expect(unit2.positionCell.y).toBe(0);
 

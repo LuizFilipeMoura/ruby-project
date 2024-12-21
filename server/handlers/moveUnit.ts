@@ -28,26 +28,27 @@ export const moveUnit = ({ unit, targetCell, grid }: MoveUnitParams): MoveUnitRe
     if (unit.positionCell === targetCell) {
         throw new Error("Unit is already in target cell");
     }
+    if(!targetCell.isMovableTo()) {
+        targetCell = targetCell.getClosestMovableCell(grid) as Cell;
+    }
 
     const matrix = grid.getValidGridAsMatrix();
     const preparedGrid = new PF.Grid(matrix);
     const finder = new PF.AStarFinder({
         allowDiagonal: true
     });
+
     const path = finder.findPath(unit.positionCell.x, unit.positionCell.y, targetCell.x, targetCell.y, preparedGrid);
 
-//during the movement, the cells are been updated?
 
     const nextCandidate = path[1];
 
     const nextCell = grid.cellAt({ x: nextCandidate[0], y: nextCandidate[1] });
-    // const {x: formerX, y: formerY} = unit.positionCell;
-    // console.log("unit position before", unit.positionCell);
-    // console.log("cell candidate before", nextCell);
 
-    nextCell?.setUnit(unit);
-    // console.log("unit position after", unit.positionCell);
-    // console.log("former unit position", grid.cellAt({ x: formerX, y: formerY }));  
+    if(!nextCell) {
+        throw new Error("No cell found");
+    }
+    nextCell.setUnit(unit);
 
     return {
         nextCandidate: path[1],

@@ -20,6 +20,8 @@ export class Cell {
     createdAt: number = Date.now();
     updatedAt: number = Date.now();
     isSpawnableBy: (player: Player) => boolean = (player: Player) => {
+        console.log(this.ownerPlayerId, player.id);
+        console.log(this.unitId);
         if(this.unitId) {
             return false;
         }
@@ -27,7 +29,14 @@ export class Cell {
             return true;
         }
         return false
-    }; 
+    };
+    getClosestMovableCell: (grid: Grid) => Cell | null = (grid: Grid) => {
+        if(this.isMovableTo()) {
+            return this;
+        }
+        const cellsInRange = this.getCellsInRange(1, grid);
+        return cellsInRange.find(cell => cell.isMovableTo()) || null;
+    } 
     
     isMovableTo: () => boolean = () => {
         if(this.unitId) {
