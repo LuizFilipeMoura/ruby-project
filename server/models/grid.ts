@@ -4,7 +4,7 @@ export class Grid {
     cells: Cell[] = [];
     numberOfColumns: number;
     numberOfRows: number;
-
+    
     constructor(numberOfColumns: number, numberOfRows: number) {
         this.cells = [];
         this.numberOfColumns = numberOfColumns;

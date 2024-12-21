@@ -21,7 +21,15 @@ unit = {
     name: "Test Unit",
     spawnCost: 10,
 };
+import { assert } from "jsr:@std/assert@1";
 
+Deno.test({
+  name: "a test case",
+  fn() {
+    let someCondition = true;
+    assert(someCondition);
+  },
+});
 describe("spawn", () => {
     it("spawn units correctly", () => {
         let unit = new Unit();
