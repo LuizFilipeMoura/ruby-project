@@ -9,4 +9,13 @@ export class GameState {
     currentTick: number = 0;
     grid: Grid = new Grid(10, 10);
 
+    nextTick() {
+        this.currentTick++;
+    }
+
+    advanceTicks = (numberOfTicks: number) => {        
+        for (let i = 0; i < numberOfTicks; i++) {
+            this.nextTick();
+        }
+    }   
 }

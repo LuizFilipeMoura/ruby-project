@@ -11,9 +11,6 @@ export class Cell {
         this.y = y || this.y;
         this.hasUnit = hasUnit || this.hasUnit;
         this.ownerPlayerId = ownerPlayerId || this.ownerPlayerId;
-        this.isSpawnableBy = (player: Player): boolean => {
-            return !this.hasUnit && player.id === this.ownerPlayerId;
-        }
     }
     x: number = 0;
     y: number = 0;
@@ -23,5 +20,19 @@ export class Cell {
     terrain: string = "grass";
     createdAt: number = Date.now();
     updatedAt: number = Date.now();
-    isSpawnableBy: (player: Player) => boolean
+    isSpawnableBy: (player: Player) => boolean = (player: Player) => {
+        if(this.hasUnit) {
+            return false;
+        }
+        if(this.ownerPlayerId === player.id) {
+            return true;
+        }
+        return false
+    }; 
+    isMovableTo: () => boolean = () => {
+        if(this.hasUnit) {
+            return false;
+        }
+        return true;
+    }
 }
