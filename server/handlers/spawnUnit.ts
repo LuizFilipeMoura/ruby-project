@@ -37,6 +37,8 @@ export const spawnUnit = ({unit, gameState, player, cell}: SpawnUnitProps) => {
     if (!unit.name) {
         throw new Error("Unit must have a name");
     }
+    console.log("unit", unit);
+    console.log("Player", player);
     if(player.gold < unit.spawnCost) {
         throw new Error("Player does not have enough gold to spawn unit");
     }
