@@ -26,7 +26,7 @@ function setup() {
         ...unit,
         name: "Test Unit",
         spawnCost: 10,
-    };
+    } as Unit;;
     cell.ownerPlayerId = player1.id;
 }
 
@@ -72,7 +72,7 @@ Deno.test("throws an error if the player does not have enough gold", () => {
         ...unit,
         name: "Test Unit",
         spawnCost: 1001,
-    };
+    } as Unit;
     expect(() => spawnUnit({ unit, gameState, player: player1, cell }))
         .toThrow(
             "Player does not have enough gold to spawn unit",

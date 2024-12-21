@@ -2,24 +2,21 @@ import { Cell } from "../models/cell.ts";
 import PF from "npm:pathfinding@0.4.18";
 
 import type { Unit } from "../models/unit.ts";
+import { Grid } from "../models/grid.ts";
 
 interface MoveUnitParams {
     unit: Unit;
     targetCell: Cell;
+    grid: Grid;
 }
-export const moveUnit = ({ unit, targetCell }: MoveUnitParams) => {
-    const matrix = [
-        [0, 0, 0, 1, 0],
-        [1, 0, 0, 0, 1],
-        [0, 0, 1, 0, 0],
-    ];
-    const grid = new PF.Grid(matrix);
-    const finder = new PF.AStarFinder({
-        allowDiagonal: true
-    });
-    const path = finder.findPath(1, 2, 4, 2, grid);
-    console.log("path", path);
-    if (!unit.canMove|| !unit.canMove()) {
+export interface MoveUnitResponse {
+    nextCandidate: number[];
+    fullPath: number[][];
+}
+
+export const moveUnit = ({ unit, targetCell, grid }: MoveUnitParams): MoveUnitResponse => {
+
+    if (!unit.canMove) {
         throw new Error("Unit cannot move");
     }
     if (!unit.positionCell) {
@@ -32,9 +29,19 @@ export const moveUnit = ({ unit, targetCell }: MoveUnitParams) => {
         throw new Error("Unit is already in target cell");
     }
 
-    
+    const matrix = grid.getValidGridAsMatrix();
+    const preparedGrid = new PF.Grid(matrix);
+    const finder = new PF.AStarFinder({
+        allowDiagonal: true
+    });
+    const path = finder.findPath(unit.positionCell.x, unit.positionCell.y, targetCell.x, targetCell.y, preparedGrid);
 
+//during the movement, the cells are been updated?
 
+    return {
+        nextCandidate: path[1],
+        fullPath: path
+    }
 
     
 

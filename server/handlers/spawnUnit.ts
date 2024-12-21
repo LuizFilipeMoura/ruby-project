@@ -43,7 +43,10 @@ export const spawnUnit = ({unit, gameState, player, cell}: SpawnUnitProps) => {
     }
     player.gold -= unit.spawnCost;
     cell.hasUnit = true;
+    cell.unitId = unit.id;
+    unit.positionCell = cell;
     gameState.units.push(unit);
+    return unit;
     // io.emit("unitSpawned", unit);
 
 }

@@ -4,11 +4,14 @@ import { WithId } from "./withId.ts";
 export class Unit extends WithId {
     name: string = "";
     health: number = 100;
-    attack: number = 10;
+
+    attackDamage: number = 10;
     defense: number = 10;
 
     // How many ticks does it take for the unit to advance one cell, lower is faster
-    ticksToMoveOneCell: number = 50;
+    ticksNeededToMoveOneCell: number = 50;
+
+    ticksNeededToAttack: number = 50;
     range: number = 1;
     spawnCost: number = 0;
     description: string = "";
@@ -17,12 +20,23 @@ export class Unit extends WithId {
     updatedAt: number = Date.now();
     positionCell: Cell | null = null;
     targetCell: Cell | null = null;
-    isAttacking: boolean = false;
 
-    canMove?: () => boolean = () => {
-        if(this.isAttacking) {
+    ownerPlayerId: string = "";
+    ticksUntilMove: number = this.ticksNeededToMoveOneCell;
+
+    ticksUntilAttack: number = this.ticksNeededToAttack;
+    public get canMove() {
+        if (this.currentlyTargetedId) {
             return false;
         }
         return true;
-    };
+    }
+
+    public get canAttack() {
+        if (this.ticksUntilAttack > 0) {
+            return false;
+        }
+        return true;
+    }
+    currentlyTargetedId: string | null = null;
 }
