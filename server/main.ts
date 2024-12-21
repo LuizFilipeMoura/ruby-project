@@ -1,7 +1,14 @@
 import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
 import { Server } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
+import { GameState } from "./models/gameState.ts";
+import { spawnUnitHandler } from "./handlers/spawnUnit.ts";
 
 const io = new Server();
+export const globalGameState = new GameState();
+
+const handlers = {
+  "spawnUnit": spawnUnitHandler,
+}
 
 io.on("connection", (socket) => {
   console.log(`socket ${socket.id} connected`);

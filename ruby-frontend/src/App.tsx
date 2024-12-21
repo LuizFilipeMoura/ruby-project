@@ -1,20 +1,18 @@
-import './App.css'
-// @deno-types="@types/react"
 import { useState } from 'react'
-// @ts-expect-error Unable to infer type at the moment
 import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
     <>
-      <img src="/vite-deno.svg" alt="Vite with Deno" />
       <div>
         <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
+          <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
-        <a href="https://reactjs.org" target="_blank">
+        <a href="https://react.dev" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
