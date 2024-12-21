@@ -16,6 +16,7 @@ io.on("connection", (socket) => {
   Object.keys(handlers).forEach((eventName) => {
     socket.on(eventName, (data) => {
       try {
+        // @ts-ignore
         handlers[eventName](socket, data);
       } catch (error) {
         console.error(`Error handling event '${eventName}':`, error);
