@@ -13,22 +13,10 @@ export class GameState {
     nextTick() {
         this.currentTick++;
         for (let i = 0; i < this.units.length; i++) {
+
             const unit = this.units[i];
-            unit.ticksUntilMove--;
-            if (unit.ticksUntilMove <= 0) {
-                unit.ticksUntilMove = unit.ticksNeededToMoveOneCell;
-                if (unit.positionCell === null) {
-                    continue;
-                }
-                if (unit.targetCell) {
-                    const { nextCandidate: [x, y] } = moveUnit({
-                        unit,
-                        targetCell: unit.targetCell,
-                        grid: this.grid,
-                    });
-                    unit.positionCell = this.grid.cellAt({ x, y });
-                }
-            }
+            const player = this.getPlayerById(unit.ownerPlayerId) as Player;
+            unit.handleTickPassed({grid: this.grid, player, gameState: this});
         }
     }
 
@@ -37,6 +25,9 @@ export class GameState {
             this.nextTick();
         }
     };
+    getPlayerById = (id: string) => {
+        return this.players.find((player) => player.id === id);
+    }
     getUnitById = (id: string) => {
         return this.units.find((unit) => unit.id === id);
     }

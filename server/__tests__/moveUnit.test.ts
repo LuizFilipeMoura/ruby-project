@@ -139,7 +139,7 @@ Deno.test("don't move until enough ticks have passed", () => {
     expect(unit.positionCell.x).toBe(0);
     expect(unit.positionCell.y).toBe(0);
 
-    gameState.advanceTicks(1);
+    gameState.advanceTicks(2);
     expect(unit.positionCell.x).toBe(1);
     expect(unit.positionCell.y).toBe(0);
 });

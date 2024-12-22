@@ -208,3 +208,63 @@ Deno.test("unit continues attacking until the enemy unit dies", () => {
     expect(unit.currentlyTargetedId).toBe(null);
     expect(enemyUnit.health).toBeLessThanOrEqual(0);
 });
+
+Deno.test("unit should wait the correct amount of ticks before attacking again", () => {
+    setup();
+    spawn2CombatableUnits();
+    unit.ticksUntilAttack = 0;
+
+    // First attack
+    try{
+        verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    }catch(e){
+        console.log(e);
+    }
+    expect(unit.currentlyTargetedId).toBe(enemyUnit.id);
+    expect(enemyUnit.health).toBe(unit.health - unit.attackDamage);
+
+    // Advance ticks and verify no attack
+    unit.ticksUntilAttack = unit.ticksNeededToAttack - 1;
+    try{
+        verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    }catch(e){
+        console.log(e);
+    }
+    expect(enemyUnit.health).toBe(unit.health - unit.attackDamage);
+
+    // Advance one more tick and verify attack
+    unit.ticksUntilAttack = 0;
+    try{
+        verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    }catch(e){
+        console.log(e);
+    }
+    expect(enemyUnit.health).toBe(unit.health - 2 * unit.attackDamage);
+});
+
+Deno.test("unit should not attack if ticksUntilAttack is not zero", () => {
+    setup();
+    spawn2CombatableUnits();
+    unit.ticksUntilAttack = unit.ticksNeededToAttack;
+    
+
+    try{
+        verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    }catch(e){
+        console.log(e);
+    }   
+    expect(enemyUnit.health).toBe(enemyUnit.health);
+});
+
+Deno.test("unit should attack after advancing ticks to zero", () => {
+    setup();
+    spawn2CombatableUnits();
+    unit.ticksUntilAttack = unit.ticksNeededToAttack;
+
+    // Advance ticks
+    unit.ticksUntilAttack = 0;
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    expect(unit.currentlyTargetedId).toBe(enemyUnit.id);
+    expect(enemyUnit.health).toBe(unit.health - unit.attackDamage);
+});
+

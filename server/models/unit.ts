@@ -1,5 +1,9 @@
+import { verifyCombat } from "../handlers/combat.ts";
+import { moveUnit } from "../handlers/moveUnit.ts";
 import type { Cell } from "./cell.ts";
 import type { GameState } from "./gameState.ts";
+import type { Grid } from "./grid.ts";
+import type { Player } from "./player.ts";
 import { WithId } from "./withId.ts";
 
 export class Unit extends WithId {
@@ -56,5 +60,19 @@ export class Unit extends WithId {
     }
     die = (gameState: GameState) => {
         gameState.unitDies(this);
+    }
+    handleTickPassed = ({grid, player, gameState}: {grid: Grid, player: Player, gameState: GameState}) => {
+        if(this.ticksUntilMove <= 0) {
+
+            this.ticksUntilMove = this.ticksNeededToMoveOneCell;
+            if(this.targetCell) {
+                moveUnit({targetCell: this.targetCell, unit: this, grid});
+            }
+        }
+        if(this.ticksUntilAttack <= 0) {
+            verifyCombat({mainUnit: this, grid, player, gameState: gameState});
+        }
+        this.ticksUntilMove--;
+        this.ticksUntilAttack--;
     }
 }
