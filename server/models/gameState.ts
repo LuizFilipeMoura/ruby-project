@@ -40,4 +40,8 @@ export class GameState {
     getUnitById = (id: string) => {
         return this.units.find((unit) => unit.id === id);
     }
+    unitDies = (unit: Unit) => {
+        unit.positionCell?.removeUnit();
+        this.units = this.units.filter((u) => u.id !== unit.id);
+    }
 }

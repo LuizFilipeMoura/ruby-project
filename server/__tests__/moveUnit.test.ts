@@ -92,7 +92,6 @@ Deno.test("move the unit to avoid cells with hasUnit", () => {
     obstacleCell.unitId = "obstacle";
     gameState.grid = grid;
     const matrix = grid.getValidGridAsMatrix();
-    console.log("matrix", matrix);
 
     cell = grid.cellAt({ x: 5, y: 0 }) || new Cell();
 
@@ -129,7 +128,6 @@ Deno.test("don't move until enough ticks have passed", () => {
     setup();
     cell = grid.cellAt({ x: 5, y: 0 }) || new Cell();
     unit.targetCell = cell;
-    console.log("unit.positionCell", unit.positionCell);
     expect(gameState.units.length).toBe(1);
     if (unit.positionCell === null) {
         throw new Error("Unit must have a position cell");
@@ -184,7 +182,7 @@ Deno.test("assess if the matrix is updated after the unit leaves the cell", () =
     expect(unit.positionCell.y).toBe(0);
 
     const matrix = grid.getValidGridAsMatrix();
-    console.log("matrix", matrix);
+
     expect(matrix[0][0]).toBe(0); // The cell at (0, 0) should be empty
     expect(matrix[0][1]).toBe(1); // The cell at (1, 0) should have the unit
 });

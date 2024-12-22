@@ -1,4 +1,5 @@
 import type { Cell } from "./cell.ts";
+import type { GameState } from "./gameState.ts";
 import { WithId } from "./withId.ts";
 
 export class Unit extends WithId {
@@ -43,4 +44,17 @@ export class Unit extends WithId {
         return true;
     }
     currentlyTargetedId: string | null = null;
+
+    attacks = (unit: Unit, gameState: GameState) => {
+
+        unit.health -= this.attackDamage;
+
+        if(unit.health <= 0) {
+            unit.die(gameState);
+        }
+        this.ticksUntilAttack = this.ticksNeededToAttack;
+    }
+    die = (gameState: GameState) => {
+        gameState.unitDies(this);
+    }
 }

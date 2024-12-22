@@ -20,8 +20,7 @@ export class Cell {
     createdAt: number = Date.now();
     updatedAt: number = Date.now();
     isSpawnableBy: (player: Player) => boolean = (player: Player) => {
-        console.log(this.ownerPlayerId, player.id);
-        console.log(this.unitId);
+
         if(this.unitId) {
             return false;
         }
@@ -78,6 +77,6 @@ export class Cell {
     }
     getEnemyUnitsInRange: (range: number, grid: Grid, player: Player) => Cell[] = (range: number, grid: Grid, player: Player) => {
         const cellsInRange = this.getCellsInRange(range, grid);
-        return cellsInRange.filter(cell => cell.hasUnit && cell.ownerPlayerId !== player.id);
+        return cellsInRange.filter(cell => cell.unitId && cell.ownerPlayerId !== player.id);
     }
 }

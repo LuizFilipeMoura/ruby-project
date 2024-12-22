@@ -22,7 +22,6 @@ export const spawnUnit = ({unit, gameState, player, cell}: SpawnUnitProps) => {
     if(!cell) {
         throw new Error("Cell must be provided");
     }
-    console.log("cell", cell);
     if(!cell.isSpawnableBy(player)) {
         throw new Error("Cell is not spawnable by player");
     }
