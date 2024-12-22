@@ -12,7 +12,8 @@ interface SpawnUnitProps {
 }
 export const spawnUnitHandler = (socket: any, data: any ) => {
     try {
-        spawnUnit(data);
+        console.log("spawnUnitHandler", data);
+        socket.send("unitSpawned", {test: "abv"});
     } catch (error) {
         console.error(`Error handling event 'spawnUnit':`, error);
     }
