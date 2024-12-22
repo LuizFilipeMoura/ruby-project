@@ -42,6 +42,7 @@ export const verifyCombat = (
             grid,
             player,
         });
+        console.log(enemyUnitsIdsInRange);
 
         if (
             !enemyUnitsIdsInRange || enemyUnitsIdsInRange.length === 0 ||

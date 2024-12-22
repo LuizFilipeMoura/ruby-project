@@ -45,12 +45,12 @@ function setup() {
     cell.ownerPlayerId = player1.id;
 }
 
-const spawn2CombatableUnits = () => {
+const spawn2CombatableUnits = (enemySpawnX = 1, enemySpawnY = 0) => {
     gameState = new GameState();
     unit.ticksUntilAttack = 0;
     unit = spawnUnit({ unit, gameState, player: player1, cell });
 
-    enemyCell = grid.cellAt({ x: 1, y: 0 }) || new Cell();
+    enemyCell = grid.cellAt({ x: enemySpawnX, y: enemySpawnY }) || new Cell();
     enemyCell.ownerPlayerId = player2.id;
 
     enemyUnit = new Unit();
@@ -74,8 +74,95 @@ Deno.test("verifyCombat correctly", () => {
     expect(enemyUnit.health).toBe(unit.health - unit.attackDamage);
 });
 
-Deno.test("throw error if enemy is out of range", () => {
+Deno.test("unit does not attack when out of range", () => {
     setup();
+    spawn2CombatableUnits(5, 0)
+
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+
+    expect(unit.currentlyTargetedId).toBe(null);
+    expect(enemyUnit.health).toBe(enemyUnit.health);
+});
+
+Deno.test("unit attacks the closest enemy unit", () => {
+    setup();
+    spawn2CombatableUnits();
+    const secondEnemyCell = grid.cellAt({ x: 2, y: 0 }) || new Cell();
+    const secondEnemyUnit = new Unit({
+        name: "Second Enemy Unit",
+        spawnCost: 10,
+        positionCell: secondEnemyCell,
+        attackDamage: 10,
+        ticksNeededToMoveOneCell: 20,
+        ticksUntilMove: 20,
+        ticksNeededToAttack: 30,
+        ticksUntilAttack: 30,
+    });
+    secondEnemyCell.ownerPlayerId = player2.id;
+    gameState.units.push(secondEnemyUnit);
+
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    expect(unit.currentlyTargetedId).toBe(enemyUnit.id);
+    expect(enemyUnit.health).toBe(unit.health - unit.attackDamage);
+});
+
+Deno.test("unit stops attacking when enemy moves out of range", () => {
+    setup();
+    spawn2CombatableUnits();
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    expect(unit.currentlyTargetedId).toBe(enemyUnit.id);
+    if(!enemyUnit.positionCell) {
+        throw new Error("Enemy unit has no position cell");
+    }
+    enemyUnit.positionCell.removeUnit();
+    enemyCell = grid.cellAt({ x: 5, y: 0 }) || new Cell();
+    enemyUnit.positionCell = enemyCell;
+    unit.ticksUntilAttack = 0;
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    expect(unit.currentlyTargetedId).toBe(null);
+});
+
+Deno.test("unit attacks one of two enemy units", () => {
+    setup();
+    spawn2CombatableUnits();
+    const secondEnemyCell = grid.cellAt({ x: 1, y: 1 }) || new Cell();
+    const secondEnemyUnit = new Unit({
+        name: "Second Enemy Unit",
+        spawnCost: 10,
+        positionCell: secondEnemyCell,
+        attackDamage: 10,
+        ticksNeededToMoveOneCell: 20,
+        ticksUntilMove: 20,
+        ticksNeededToAttack: 30,
+        ticksUntilAttack: 30,
+    });
+    secondEnemyCell.ownerPlayerId = player2.id;
+    gameState.units.push(secondEnemyUnit);
+
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    expect(unit.currentlyTargetedId).not.toBe(null);
+    expect([enemyUnit.id, secondEnemyUnit.id]).toContain(unit.currentlyTargetedId);
+});
+
+Deno.test("unit attacks one of two friendly units", () => {
+    setup();
+    const secondFriendlyCell = grid.cellAt({ x: 1, y: 1 }) || new Cell();
+    secondFriendlyCell.ownerPlayerId = player1.id;
+    const secondFriendlyUnit = new Unit({
+        name: "Second Friendly Unit",
+        spawnCost: 10,
+        positionCell: secondFriendlyCell,
+        attackDamage: 10,
+        ticksNeededToMoveOneCell: 20,
+        ticksUntilMove: 20,
+        ticksNeededToAttack: 30,
+        ticksUntilAttack: 30,
+    });
+    spawnUnit({ unit: secondFriendlyUnit, gameState, player: player1, cell: secondFriendlyCell });
+    unit.ticksUntilAttack = 0;
+
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    expect(unit.currentlyTargetedId).toBe(null);
 });
 
 // spawn the unit somewhere else
@@ -83,3 +170,41 @@ Deno.test("throw error if enemy is out of range", () => {
 // enemy units gets out of range after moving
 // spawn two enemy units
 // spawn two friendly units
+Deno.test("unit continues attacking the same unit for several attacks in a row", () => {
+    setup();
+    spawn2CombatableUnits();
+    unit.ticksUntilAttack = 0;
+
+    // First attack
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    expect(unit.currentlyTargetedId).toBe(enemyUnit.id);
+    expect(enemyUnit.health).toBe(unit.health - unit.attackDamage);
+
+    // Second attack
+    unit.ticksUntilAttack = 0;
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    expect(unit.currentlyTargetedId).toBe(enemyUnit.id);
+    expect(enemyUnit.health).toBe(unit.health - 2 * unit.attackDamage);
+
+    // Third attack
+    unit.ticksUntilAttack = 0;
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    expect(unit.currentlyTargetedId).toBe(enemyUnit.id);
+    expect(enemyUnit.health).toBe(unit.health - 3 * unit.attackDamage);
+});
+Deno.test("unit continues attacking until the enemy unit dies", () => {
+    setup();
+    spawn2CombatableUnits();
+    unit.ticksUntilAttack = 0;
+
+    while (enemyUnit.health > 0) {
+        verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+        expect(unit.currentlyTargetedId).toBe(enemyUnit.id);
+        enemyUnit.health -= unit.attackDamage;
+        unit.ticksUntilAttack = 0;
+    }
+
+    verifyCombat({ mainUnit: unit, grid: grid, player: player1, gameState });
+    expect(unit.currentlyTargetedId).toBe(null);
+    expect(enemyUnit.health).toBeLessThanOrEqual(0);
+});
