@@ -3,11 +3,16 @@ import { Server } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
 import { GameState } from "./models/gameState.ts";
 import { spawnUnitHandler } from "./handlers/spawnUnit.ts";
 
-const io = new Server();
+const io = new Server({
+  cors: {
+    origin: "*",
+  },
+});
 export const globalGameState = new GameState();
 
 const handlers = {
   "spawnUnit": spawnUnitHandler,
+  "clientReadyToLoadGrid": 
 }
 
 io.on("connection", (socket) => {
@@ -31,6 +36,5 @@ io.on("connection", (socket) => {
 });
 
 await serve(io.handler(), {
-  
   port: 3000,
 });

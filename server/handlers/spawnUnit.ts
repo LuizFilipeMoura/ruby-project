@@ -1,4 +1,3 @@
-import type { Socket } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
 import type { GameState } from "../models/gameState.ts";
 import type { Player } from "../models/player.ts";
 import type { Unit } from "../models/unit.ts";

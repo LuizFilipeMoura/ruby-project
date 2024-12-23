@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { socket } from "@/socket";
-
+import Grid from "@/app/components/Grid";
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
@@ -36,9 +36,17 @@ export default function Home() {
   }, []);
 
   return (
-      <div>
-        <p>Status: { isConnected ? "connected" : "disconnected" }</p>
-        <p>Transport: { transport }</p>
-      </div>
+    <div>
+      <p>Status: {isConnected ? "connected" : "disconnected"}</p>
+      <p>Transport: {transport}</p>
+      <button
+        onClick={() => {
+          socket.emit("spawnUnit", { x: 0, y: 0 });
+        }}
+      >
+        Spawn Unit
+      </button>
+      <Grid></Grid>
+    </div>
   );
 }
