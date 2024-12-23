@@ -1,38 +1,71 @@
 import './App.css';
-import { useMemo } from 'react';
+import { Stage, Graphics } from '@pixi/react';
+import * as PIXI from 'pixi.js';
+import '@pixi/events';
 
-import { BlurFilter, TextStyle } from 'pixi.js';
-import { Stage, Container, Sprite, Text } from '@pixi/react';
+import { Event, useSocketEvents } from './hooks/useSocketEvents';
+import {Grid} from "./models/grid.ts";
+import {useCallback, useState} from "react";
+import {Button} from "./atoms/Button.tsx";
+import {socket} from "./main.tsx";
+
+const cellWidth = 50; // Width of each cell
+const cellHeight = 50; // Height of each cell
 
 const App = () => {
-    const blurFilter = useMemo(() => new BlurFilter(2), []);
-    const bunnyUrl = 'https://pixijs.io/pixi-react/img/bunny.png';
+    const [grid, setGrid] = useState<Grid>();
+    const events: Event[] = [
+        {
+            name: 'serverReady_loadGrid',
+            handler(message: any) {
+                console.log("message", message);
+                setGrid(message);
+            },
+        },
+    ];
+    const drawGrid = useCallback(
+        (g: PIXI.Graphics) => {
+            if(!grid) {
+                return;
+            }
+            g.clear();
+            g.lineStyle(1, 0xffffff, 1); // Line thickness, color, and alpha
+
+            // Draw vertical lines
+            for (let i = 0; i <= grid.numberOfColumns; i++) {
+                const x = i * cellWidth;
+                g.moveTo(x, 0);
+                g.lineTo(x, grid.numberOfRows * cellHeight);
+            }
+
+            // Draw horizontal lines
+            for (let j = 0; j <= grid.numberOfRows; j++) {
+                const y = j * cellHeight;
+                g.moveTo(0, y);
+                g.lineTo(grid.numberOfColumns * cellWidth, y);
+            }
+        },
+        [grid, cellWidth, cellHeight]
+    );
+
+    useSocketEvents(events);
+
+    const handleLoadGridButton = () => {
+        socket.emit('clientReady_loadGrid');
+    };
+
     return (
         <Stage width={800} height={600} options={{ background: 0x1099bb }}>
-            <Sprite image={bunnyUrl} x={300} y={150} />
-            <Sprite image={bunnyUrl} x={500} y={150} />
-            <Sprite image={bunnyUrl} x={400} y={200} />
-
-            <Container x={200} y={200}>
-                <Text
-                    text="Hello World"
-                    anchor={0.5}
-                    x={220}
-                    y={150}
-                    filters={[blurFilter]}
-                    style={
-                        new TextStyle({
-                            align: 'center',
-                            fill: '0xffffff',
-                            fontSize: 50,
-                            letterSpacing: 20,
-                            dropShadow: true,
-                            dropShadowColor: '#E72264',
-                            dropShadowDistance: 6,
-                        })
-                    }
-                />
-            </Container>
+            {
+                grid ? (<>
+                        <Graphics draw={drawGrid} />
+                    </>
+                ) : (
+                    <>
+                        <Button x={300} y={250} width={200} height={50} text="Load grid" onClick={handleLoadGridButton} />
+                    </>
+                )
+            }
         </Stage>
     );
 };

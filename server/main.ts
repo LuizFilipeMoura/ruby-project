@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
 import { Server } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
 import { GameState } from "./models/gameState.ts";
 import { spawnUnitHandler } from "./handlers/spawnUnit.ts";
+import {clientReady_loadGrid} from "./handlers/clientReady.ts";
 
 const io = new Server({
   cors: {
@@ -12,7 +13,7 @@ export const globalGameState = new GameState();
 
 const handlers = {
   "spawnUnit": spawnUnitHandler,
-  "clientReadyToLoadGrid": 
+  "clientReady_loadGrid": clientReady_loadGrid
 }
 
 io.on("connection", (socket) => {
