@@ -19,3 +19,7 @@ export function useSocketEvents(events: Event[]) {
         };
     }, []);
 }
+export const playerId = () => sessionStorage.getItem("playerId");
+export function playerEmit(eventName: string, data: any) {
+    socket.emit(eventName, {...data, playerId: playerId()});
+}

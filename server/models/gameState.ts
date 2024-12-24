@@ -1,14 +1,14 @@
 import { Unit } from "./unit.ts";
 import { Player } from "./player.ts";
-import { Cell } from "./cell.ts";
 import { Grid } from "./grid.ts";
-import { moveUnit } from "../handlers/moveUnit.ts";
+import {WithId} from "./withId.ts";
 
-export class GameState {
+export class GameState extends WithId{
     units: Unit[] = [];
     players: Player[] = [];
     currentTick: number = 0;
     grid: Grid = new Grid(10, 10);
+    roomId: string = "";
 
     nextTick() {
         this.currentTick++;

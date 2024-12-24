@@ -1,54 +1,68 @@
 import './App.css';
-import {Stage, Graphics, Container, Text} from '@pixi/react';
+import {AnimatedSprite, Container, Graphics, Sprite, Stage, Text} from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import '@pixi/events';
 
-import { Event, useSocketEvents } from './hooks/useSocketEvents';
+import {Event, playerEmit, useSocketEvents} from './hooks/useSocketEvents';
 import {Grid} from "./models/grid.ts";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Button} from "./atoms/Button.tsx";
-import {socket} from "./main.tsx";
+import {GameState} from "./models/gameState.ts";
+import {Assets, Spritesheet, Texture} from 'pixi.js';
+
+
+
 
 const cellWidth = 50; // Width of each cell
 const cellHeight = 50; // Height of each cell
 
 const App = () => {
+
+    const [frames, setFrames] = useState<any>();
+
+    // useEffect(() => {
+    //     const a = async () => {
+    //         try {
+    //             const sheet = await Assets.load<Spritesheet>('spritesheet.json');
+    //             console.log(sheet);
+    //             console.log("Object.keys(sheet.data.frames)", Object.keys(sheet.data.frames))
+    //             setFrames(
+    //                 Object.keys(sheet.data.frames).map(frame =>
+    //                     Texture.from(frame)
+    //                 )
+    //             );
+    //         }catch (e) {
+    //          console.log(e)
+    //         }
+    //
+    //     }
+    //     a()
+    // }, []);
+
+
+    useEffect(() => {
+        console.log("frames", frames);
+    }, [frames]);
     const [grid, setGrid] = useState<Grid>();
     const events: Event[] = [
         {
-            name: 'serverReady_loadGrid',
+            name: 'completeGameStateTick',
+            handler(message: GameState) {
+                const {grid, units} = message;
+                console.log("units", units);
+                setGrid(grid);
+            },
+        },
+        {
+            name: 'preGameStart:AssignPlayerId',
             handler(message: any) {
-                console.log("message", message);
-                setGrid(message);
+                // console.log("message", message);
+                sessionStorage.setItem("playerId", message.playerId);
             },
         },
     ];
     const [hoveredCells, setHoveredCells] = useState<{ [key: string]: boolean }>({});
 
-    // const drawGrid = useCallback(
-    //     (g: PIXI.Graphics) => {
-    //         if(!grid) {
-    //             return;
-    //         }
-    //         g.clear();
-    //         g.lineStyle(1, 0xffffff, 1); // Line thickness, color, and alpha
-    //
-    //         // Draw vertical lines
-    //         for (let i = 0; i <= grid.numberOfColumns; i++) {
-    //             const x = i * cellWidth;
-    //             g.moveTo(x, 0);
-    //             g.lineTo(x, grid.numberOfRows * cellHeight);
-    //         }
-    //
-    //         // Draw horizontal lines
-    //         for (let j = 0; j <= grid.numberOfRows; j++) {
-    //             const y = j * cellHeight;
-    //             g.moveTo(0, y);
-    //             g.lineTo(grid.numberOfColumns * cellWidth, y);
-    //         }
-    //     },
-    //     [grid, cellWidth, cellHeight]
-    // );
     const drawCell = (g: PIXI.Graphics, isHovered: boolean) => {
         g.clear();
         g.beginFill(isHovered ? 0xffcc00 : 0x0099ff); // Highlighted or default color
@@ -61,17 +75,17 @@ const App = () => {
 
     useSocketEvents(events);
 
-    const handleLoadGridButton = () => {
-        socket.emit('clientReady_loadGrid');
-    };
+    const handlePlayerReady = () => {
+        playerEmit('clientReady_playerReady', {});
+    }
 
     return (
-        <Stage width={800} height={600} options={{ background: 0x1099bb }}>
+        <Stage width={800} height={600} options={{background: 0x1099bb}}>
             {
                 grid ? (<>
                         <Container>
-                            {Array.from({ length: grid.numberOfRows }, (_, row) =>
-                                Array.from({ length: grid.numberOfColumns }, (_, col) => {
+                            {Array.from({length: grid.numberOfRows}, (_, row) =>
+                                Array.from({length: grid.numberOfColumns}, (_, col) => {
                                     const cellKey = getCellKey(row, col);
                                     const isHovered = hoveredCells[cellKey] || false;
 
@@ -82,25 +96,33 @@ const App = () => {
                                             y={row * cellHeight}
                                             interactive={true}
                                             pointerover={() =>
-                                                setHoveredCells((prev) => ({ ...prev, [cellKey]: true }))
+                                                setHoveredCells((prev) => ({...prev, [cellKey]: true}))
                                             }
                                             pointerout={() =>
-                                                setHoveredCells((prev) => ({ ...prev, [cellKey]: false }))
+                                                setHoveredCells((prev) => ({...prev, [cellKey]: false}))
                                             }
                                             pointerdown={() =>
-                                                alert(`You clicked cell at column ${col + 1}, row ${row + 1}`)
+                                                playerEmit("spawnUnit", {x: col, y: row})
+                                                // alert(`You clicked cell at column ${col + 1}, row ${row + 1}`)
                                             }
                                         >
-                                            <Graphics draw={(g) => drawCell(g, isHovered)} />
-                                            <Text
-                                                text={`${col + 1},${row + 1}`}
-                                                x={cellWidth / 2}
-                                                y={cellHeight / 2}
+                                            <Graphics draw={(g) => drawCell(g, isHovered)}/>
+                                            {/*<Text*/}
+                                            {/*    text={`${col },${row }`}*/}
+                                            {/*    x={cellWidth / 2}*/}
+                                            {/*    y={cellHeight / 2}*/}
+                                            {/*    anchor={0.5}*/}
+                                            {/*    style={{*/}
+                                            {/*        fontSize: 12,*/}
+                                            {/*        fill: '#ffffff',*/}
+                                            {/*    }}*/}
+                                            {/*/>*/}
+                                            <Sprite
+                                                image="/sprites/Idle.gif"
+                                                scale={{ x: 0.5, y: 0.5 }}
                                                 anchor={0.5}
-                                                style={{
-                                                    fontSize: 12,
-                                                    fill: '#ffffff',
-                                                }}
+                                                x={150}
+                                                y={150}
                                             />
                                         </Container>
                                     );
@@ -110,7 +132,32 @@ const App = () => {
                     </>
                 ) : (
                     <>
-                        <Button x={300} y={250} width={200} height={50} text="Load grid" onClick={handleLoadGridButton} />
+                        {
+                            frames && (
+                                <Container x={300} y={200}>
+                                    {/*<AnimatedSprite*/}
+                                    {/*    x={0} y={200}*/}
+
+                                    {/*    animationSpeed={0.5}*/}
+                                    {/*    isPlaying={true}*/}
+                                    {/*    images={}*/}
+                                    {/*    anchor={0.5}*/}
+                                    {/*/>*/}
+                                    <Button x={0} y={200} width={200} height={50} text="Player aaaaaaaaa"
+                                            onClick={handlePlayerReady}/>
+                                </Container>
+                            )
+                        }
+                        <AnimatedSprite
+                            animationSpeed={0.05}
+                            isPlaying={true}
+                            images={["image.png", "image2.png"]}
+                            anchor={0.5}
+                        />
+                        <Button x={300} y={200} width={200} height={50} text="Player Ready"
+                                onClick={handlePlayerReady}/>
+                        {/*<Button x={300} y={250} width={200} height={50} text="Load grid"*/}
+                        {/*        onClick={handleLoadGridButton}/>*/}
                     </>
                 )
             }
