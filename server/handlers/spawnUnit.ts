@@ -65,6 +65,8 @@ export const spawnUnit = (
     player.gold -= unit.spawnCost;
     cell.unitId = unit.id;
     unit.positionCell = cell;
+    const enemyPlayer = gameState.getPlayerById(player.enemyId);
+    unit.targetCell = new Cell({ x: cell.x, y: enemyPlayer?.yLine });
     gameState.units.push(unit);
     return unit;
     // io.emit("unitSpawned", unit);

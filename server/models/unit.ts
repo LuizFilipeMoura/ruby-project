@@ -18,7 +18,7 @@ export class Unit extends WithId {
     defense: number = 10;
 
     // How many ticks does it take for the unit to advance one cell, lower is faster
-    ticksNeededToMoveOneCell: number = 50;
+    ticksNeededToMoveOneCell: number = 5;
 
     ticksNeededToAttack: number = 50;
     range: number = 1;

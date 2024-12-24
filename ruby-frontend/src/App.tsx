@@ -1,14 +1,14 @@
 import './App.css';
-import {AnimatedSprite, Container, Graphics, Sprite, Stage, Text} from '@pixi/react';
+import {Container, Graphics, Sprite, Stage} from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import '@pixi/events';
-
 import {Event, playerEmit, useSocketEvents} from './hooks/useSocketEvents';
 import {Grid} from "./models/grid.ts";
-import {useEffect, useState} from "react";
+import { useState} from "react";
 import {Button} from "./atoms/Button.tsx";
 import {GameState} from "./models/gameState.ts";
-import {Assets, Spritesheet, Texture} from 'pixi.js';
+import {UnitAnimatedSprite} from "./components/UnitAnimatedSprite.tsx";
+import {Unit} from "./models/unit.ts";
 
 
 
@@ -18,32 +18,9 @@ const cellHeight = 50; // Height of each cell
 
 const App = () => {
 
-    const [frames, setFrames] = useState<any>();
-
-    // useEffect(() => {
-    //     const a = async () => {
-    //         try {
-    //             const sheet = await Assets.load<Spritesheet>('spritesheet.json');
-    //             console.log(sheet);
-    //             console.log("Object.keys(sheet.data.frames)", Object.keys(sheet.data.frames))
-    //             setFrames(
-    //                 Object.keys(sheet.data.frames).map(frame =>
-    //                     Texture.from(frame)
-    //                 )
-    //             );
-    //         }catch (e) {
-    //          console.log(e)
-    //         }
-    //
-    //     }
-    //     a()
-    // }, []);
-
-
-    useEffect(() => {
-        console.log("frames", frames);
-    }, [frames]);
     const [grid, setGrid] = useState<Grid>();
+    const [units, setUnits] = useState<Unit[]>();
+
     const events: Event[] = [
         {
             name: 'completeGameStateTick',
@@ -51,6 +28,8 @@ const App = () => {
                 const {grid, units} = message;
                 console.log("units", units);
                 setGrid(grid);
+                setUnits(units);
+
             },
         },
         {
@@ -61,6 +40,9 @@ const App = () => {
             },
         },
     ];
+    const hasUnitOnCell = (x: number, y: number) => {
+        return units?.some((unit) => unit?.positionCell?.x === x && unit?.positionCell?.y === y);
+    }
     const [hoveredCells, setHoveredCells] = useState<{ [key: string]: boolean }>({});
 
     const drawCell = (g: PIXI.Graphics, isHovered: boolean) => {
@@ -107,16 +89,12 @@ const App = () => {
                                             }
                                         >
                                             <Graphics draw={(g) => drawCell(g, isHovered)}/>
-                                            {/*<Text*/}
-                                            {/*    text={`${col },${row }`}*/}
-                                            {/*    x={cellWidth / 2}*/}
-                                            {/*    y={cellHeight / 2}*/}
-                                            {/*    anchor={0.5}*/}
-                                            {/*    style={{*/}
-                                            {/*        fontSize: 12,*/}
-                                            {/*        fill: '#ffffff',*/}
-                                            {/*    }}*/}
-                                            {/*/>*/}
+                                            {
+                                                hasUnitOnCell(col, row) && (
+                                                    <UnitAnimatedSprite unitName="skeleton" x={16} y={16} animationSpeed={0.5}/>
+                                                )
+                                            }
+
                                             <Sprite
                                                 image="/sprites/Idle.gif"
                                                 scale={{ x: 0.5, y: 0.5 }}
@@ -132,32 +110,8 @@ const App = () => {
                     </>
                 ) : (
                     <>
-                        {
-                            frames && (
-                                <Container x={300} y={200}>
-                                    {/*<AnimatedSprite*/}
-                                    {/*    x={0} y={200}*/}
-
-                                    {/*    animationSpeed={0.5}*/}
-                                    {/*    isPlaying={true}*/}
-                                    {/*    images={}*/}
-                                    {/*    anchor={0.5}*/}
-                                    {/*/>*/}
-                                    <Button x={0} y={200} width={200} height={50} text="Player aaaaaaaaa"
-                                            onClick={handlePlayerReady}/>
-                                </Container>
-                            )
-                        }
-                        <AnimatedSprite
-                            animationSpeed={0.05}
-                            isPlaying={true}
-                            images={["image.png", "image2.png"]}
-                            anchor={0.5}
-                        />
                         <Button x={300} y={200} width={200} height={50} text="Player Ready"
                                 onClick={handlePlayerReady}/>
-                        {/*<Button x={300} y={250} width={200} height={50} text="Load grid"*/}
-                        {/*        onClick={handleLoadGridButton}/>*/}
                     </>
                 )
             }

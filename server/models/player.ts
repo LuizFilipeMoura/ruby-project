@@ -6,8 +6,9 @@ export class Player extends WithId{
     gold: number = 0;
     createdAt: number = Date.now();
     updatedAt: number = Date.now();
-    constructor({gold, name}: {gold?: number, name?: string}) {
-    //     this.id = crypto.randomUUID();
+    enemyId: string = "";
+    yLine : number = 0;
+    constructor({gold = 1000, name = ""}: {gold: number, name?: string}) {
         super();
         this.gold = gold;
         this.name = name;

@@ -17,6 +17,7 @@ export const clientReady_playerReady = (socket: any, data: any, io: any) => {
         if (waitingPlayers.length >= 2) {
             const player1Socket = waitingPlayers.shift();
             const player2Socket = waitingPlayers.shift();
+
             const player1 = player1Socket.player;
             player1Socket.emit("preGameStart:AssignPlayerId", {
                 playerId: player1.id,
@@ -33,20 +34,27 @@ export const clientReady_playerReady = (socket: any, data: any, io: any) => {
             console.log(`Game started in room: ${roomId}`);
             const gameState = new GameState();
             gameState.roomId = roomId;
+            player1.enemyId = player2.id;
+            player2.enemyId = player1.id;
+
+            player1.yLine = 0;
+            player2.yLine = -1;
+
             gameState.players = [player1, player2];
             gameState.grid = new Grid(10, 10);
 
             for(let i = 0; i < gameState.grid.numberOfColumns; i++) {
-                let cell = gameState.grid.cellAt({x: i, y: 0});
-                if(!cell) {
-                    throw new Error("Cell not found");
+                for(const _player of [player1, player2]) {
+                    let {yLine} = _player;
+                    if(yLine < 0) {
+                        yLine = gameState.grid.numberOfRows + yLine;
+                    }
+                    const cell = gameState.grid.cellAt({x: i, y: yLine});
+                    if(!cell) {
+                        throw new Error("Cell not found");
+                    }
+                    cell.ownerPlayerId = _player.id;
                 }
-                cell.ownerPlayerId = player1.id;
-                cell = gameState.grid.cellAt({x: i, y: gameState.grid.numberOfRows - 1});
-                if(!cell) {
-                    throw new Error("Cell not found");
-                }
-                cell.ownerPlayerId = player2.id;
 
             }
 
