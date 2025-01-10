@@ -3,6 +3,7 @@ import type {Player} from "../models/player.ts";
 import {Unit} from "../models/unit.ts";
 import {Cell} from "../models/cell.ts";
 import {gameStates} from "./clientReady.ts";
+import { Grid } from "../models/grid.ts";
 
 interface SpawnUnitProps {
     unit: Unit;
@@ -65,9 +66,33 @@ export const spawnUnit = (
     player.gold -= unit.spawnCost;
     cell.unitId = unit.id;
     unit.positionCell = cell;
-    const enemyPlayer = gameState.getPlayerById(player.enemyId);
-    unit.targetCell = new Cell({ x: cell.x, y: enemyPlayer?.yLine });
+    unit.targetCell = autoAssignTargetCell({ unit, gameState, player });
+    console.log("unit", unit.targetCell?.x, unit.targetCell?.y);
+
     gameState.units.push(unit);
     return unit;
     // io.emit("unitSpawned", unit);
 };
+const autoAssignTargetCell = ({ unit, gameState, player }: Partial<SpawnUnitProps>) => {
+    if (!unit) {
+        throw new Error("Unit must be provided");
+    }
+    if (!gameState) {
+        throw new Error("GameState must be provided");
+    }
+    if (!player) {
+        throw new Error("Player must be provided");
+    }
+    if(!unit.positionCell) {
+        throw new Error("Unit must have a position cell");
+    }
+    const enemyPlayer = gameState.getPlayerById(player.enemyId);
+    if(!enemyPlayer) {
+        return gameState.grid.cellAt({ x: unit.positionCell.x, y: gameState.grid.numberOfRows - 1 });
+    }
+    let { yLine } = enemyPlayer as Player;
+    if (yLine < 0) {
+        yLine = gameState.grid.numberOfRows + yLine;
+    }
+    return gameState.grid.cellAt({ x: unit.positionCell.x, y: yLine });
+}

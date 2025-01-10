@@ -15,7 +15,7 @@ let unit: Unit;
 
 function setup() {
     gameState = new GameState();
-    player1 = new Player();
+    player1 = new Player({ name: "player1", gold: 1000 });
     player1 = {
         ...player1,
         gold: 1000,
@@ -190,7 +190,7 @@ Deno.test("assess if the matrix is updated after the unit leaves the cell", () =
 Deno.test("create two units moving against each other, they avoid each other", () => {
     setup();
     const enemyCell = grid.cellAt({ x: 5, y: 0 }) || new Cell();
-    const player2 = new Player();
+    const player2 = new Player({ name: "player2", gold: 1000 });
     player2.gold = 1000;
     enemyCell.ownerPlayerId = player2.id;
 
@@ -241,4 +241,61 @@ Deno.test("create two units moving against each other, they avoid each other", (
     expect(unit.positionCell.y).toBe(0);
     expect(unit2.positionCell.x).toBe(0);
     expect(unit2.positionCell.y).toBe(0);
+});
+
+Deno.test("units spawn and move to the closest available position", () => {
+    gameState = new GameState();
+    player1 = new Player({ name: "player1", gold: 1000 });
+    player1 = {
+        ...player1,
+        gold: 1000,
+    };
+    grid = new Grid(10, 10);
+    cell = grid.cellAt({ x: 0, y: 0 }) || new Cell();
+    unit = new Unit({
+        name: "friendly unit",
+        spawnCost: 10,
+        positionCell: cell,
+        ticksNeededToMoveOneCell: 20,
+        ticksUntilMove: 20,
+    });
+
+    gameState.grid = grid;
+    cell.ownerPlayerId = player1.id;
+
+    const enemyCell = grid.cellAt({ x: 0, y: 9 }) || new Cell();
+    const player2 = new Player({ name: "player2", gold: 1000 });
+    player2.gold = 1000;
+    enemyCell.ownerPlayerId = player2.id;
+
+    const unit2 = new Unit({
+        name: "enemy unit",
+        spawnCost: 10,
+        positionCell: enemyCell,
+        ticksNeededToMoveOneCell: 20,
+        ticksUntilMove: 20,
+    });
+    player1.enemyId = player2.id;
+    player2.enemyId = player1.id;
+    player1.yLine = 1;
+    player2.yLine = -1;
+    spawnUnit({ unit, gameState, player: player1, cell });
+    spawnUnit({ unit: unit2, gameState, player: player2, cell: enemyCell });
+
+
+    unit.targetCell = grid.cellAt({ x: 0, y: 1 }) || new Cell();
+    unit2.targetCell = grid.cellAt({ x: 0, y: 8 }) || new Cell();
+
+    if (unit.positionCell === null) {
+        throw new Error("Unit must have a position cell");
+    }
+    if (unit2.positionCell === null) {
+        throw new Error("Unit must have a position cell");
+    }
+
+    gameState.advanceTicks(21);
+    expect(unit.positionCell.x).toBe(0);
+    expect(unit.positionCell.y).toBe(1);
+    expect(unit2.positionCell.x).toBe(0);
+    expect(unit2.positionCell.y).toBe(8);
 });

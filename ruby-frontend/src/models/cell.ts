@@ -35,8 +35,8 @@ export class Cell {
         }
         const cellsInRange = this.getCellsInRange(1, grid);
         return cellsInRange.find(cell => cell.isMovableTo()) || null;
-    } 
-    
+    }
+
     isMovableTo: () => boolean = () => {
         if(this.unitId) {
             return false;
@@ -77,8 +77,8 @@ export class Cell {
     }
     getEnemyUnitsInRange: (range: number, grid: Grid, player: Player) => Cell[] = (range: number, grid: Grid, player: Player) => {
         const cellsInRange = this.getCellsInRange(range, grid);
-        console.log("cellsInRange", cellsInRange);
-        console.log("filter", cellsInRange.filter(cell => cell.unitId && cell.ownerPlayerId !== player.id));
+        // console.log("cellsInRange", cellsInRange);
+        // console.log("filter", cellsInRange.filter(cell => cell.unitId && cell.ownerPlayerId !== player.id));
 
         return cellsInRange.filter(cell => cell.unitId && cell.ownerPlayerId !== player.id);
     }
